@@ -1,0 +1,56 @@
+# This workflow will run tests, build the project, and deploy it to GitHub Pages.
+#
+# IMPORTANT:  Adjust the `branches` and `paths` as needed for your project.
+#            The default values here are for a standard Vue CLI project.
+#
+name: Deploy Vue.js to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Or your default branch (e.g., 'main', 'master')
+  pull_request: # Optional:  Also run on pull requests
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'vite.config.js'
+
+jobs:
+  build-and-deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    permissions:
+       contents: write
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for `git lastlog`
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # Or your preferred Node.js version
+
+      - name:  💾 Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: 📦 Install Dependencies
+        run: npm install # or yarn install
+
+      - name: 🛠️ Build Project
+        run: npm run build
+
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
